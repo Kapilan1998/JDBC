@@ -9,7 +9,14 @@ public class Main {
 //        insertRecordByPreparedStatement();
 //            deleteRecord();
 //            updateRecord();
-            updateRecordByPreparedStatement();
+//            updateRecordByPreparedStatement();
+
+//        commitDemo();
+        batchProcessDemo();
+
+
+
+
     }
 
     public static void readRecords() throws SQLException{
@@ -159,5 +166,69 @@ public class Main {
         connection.close();
 
     }
+
+                // commit vs autocommit
+    public static void commitDemo() throws SQLException{
+        String url = "jdbc:mysql://localhost:3306/jdbcdemotry";
+        String userName = "root";
+        String password ="";
+
+        String updateEmployee1 = "update employee set salary= 11051 where emp_id=3";
+        String updateEmployee2 = "update employee set salary= 6513 where emp_id=5";
+
+        Connection connection = DriverManager.getConnection(url,userName,password);
+        connection.setAutoCommit(false);    // execute all methods if they are true
+                // if any method didnot execute then it will revoke completely
+
+        Statement statement =connection.createStatement();
+        int row1 =  statement.executeUpdate(updateEmployee1);
+        System.out.println("Number of rows get updated : "+row1);
+
+        int row2 =  statement.executeUpdate(updateEmployee2);
+        System.out.println("Number of rows get updated : "+row2);
+
+        if (row1>0 && row2>0)
+            connection.commit();    // if both condition true then execute update query
+
+        connection.close();
+    }
+
+                // execute more tasks in 1 time
+    public static void batchProcessDemo() throws SQLException{
+        String url = "jdbc:mysql://localhost:3306/jdbcdemotry";
+        String userName = "root";
+        String password ="";
+
+        String updateEmployee1 = "update employee set salary= 1001 where emp_id=1";
+        String updateEmployee2 = "update employee set salary= 1002 where emp_id=2";
+        String updateEmployee3 = "update employee set salary= 1003 where emp_id=3";
+//        String updateEmployee4 = "update employee set salary= 1004 where emp_id=4";
+        String updateEmployee5 = "update employee set salary= 1005 where emp_id=5";
+
+        Connection connection = DriverManager.getConnection(url,userName,password);
+        connection.setAutoCommit(false);
+        Statement statement =connection.createStatement();
+        statement.addBatch(updateEmployee1);
+        statement.addBatch(updateEmployee2);
+        statement.addBatch(updateEmployee3);
+//        statement.addBatch(updateEmployee4);
+        statement.addBatch(updateEmployee5);
+
+        int[] response = statement.executeBatch();
+
+        for (int i: response){
+            if(i>0)
+                continue;
+            else
+                connection.rollback();      //skip all steps and won not update in DB
+        }
+        connection.commit();        // if all are true then execute and update in DB
+
+        connection.close();
+    }
+
+
+
+
 
 }
